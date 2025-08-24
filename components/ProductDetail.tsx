@@ -39,15 +39,18 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     setSelectedSize(size)
   }
 
+  // Get the currently selected image with proper null checking
+  const currentImage = images && images.length > 0 ? images[selectedImageIndex] : null
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
       {/* Product Images */}
       <div className="space-y-4">
         {/* Main Image */}
         <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-          {images.length > 0 ? (
+          {currentImage ? (
             <img
-              src={`${images[selectedImageIndex].imgix_url}?w=800&h=800&fit=crop&auto=format,compress`}
+              src={`${currentImage.imgix_url}?w=800&h=800&fit=crop&auto=format,compress`}
               alt={productName}
               className="w-full h-full object-cover"
             />
@@ -59,7 +62,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         </div>
 
         {/* Image Thumbnails */}
-        {images.length > 1 && (
+        {images && images.length > 1 && (
           <div className="grid grid-cols-4 gap-4">
             {images.map((image, index) => (
               <button
@@ -120,7 +123,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         </div>
 
         {/* Size Selection */}
-        {sizesAvailable.length > 0 && (
+        {sizesAvailable && sizesAvailable.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-lg font-medium">Size</h3>
             <div className="flex flex-wrap gap-2">
@@ -143,7 +146,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
         {/* Add to Cart Button */}
         <button
-          disabled={!inStock || (sizesAvailable.length > 0 && !selectedSize)}
+          disabled={!inStock || (sizesAvailable && sizesAvailable.length > 0 && !selectedSize)}
           className="w-full bg-black text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           {!inStock ? 'Out of Stock' : 'Add to Cart'}
