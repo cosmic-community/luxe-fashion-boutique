@@ -1,64 +1,42 @@
 'use client'
 
-import { useState } from 'react'
-import { Product } from '@/types'
-
 interface CategoryFilterProps {
-  products: Product[]
-  onFilter?: (filteredProducts: Product[]) => void
+  categories: Array<{ key: string; value: string }>
+  activeCategory?: string
 }
 
-export default function CategoryFilter({ products, onFilter }: CategoryFilterProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-
-  // Extract unique categories from products
-  const categories = products.reduce((acc, product) => {
-    const category = product.metadata?.category
-    if (category && !acc.some(cat => cat.key === category.key)) {
-      acc.push(category)
-    }
-    return acc
-  }, [] as Array<{ key: string; value: string }>)
-
-  const handleCategoryChange = (categoryKey: string) => {
-    setSelectedCategory(categoryKey)
-    
-    const filteredProducts = categoryKey === 'all' 
-      ? products 
-      : products.filter(product => product.metadata?.category?.key === categoryKey)
-    
-    onFilter?.(filteredProducts)
-  }
-
+export default function CategoryFilter({ categories, activeCategory }: CategoryFilterProps) {
   if (categories.length === 0) {
     return null
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <button
-        onClick={() => handleCategoryChange('all')}
-        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-          selectedCategory === 'all'
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+    <div className="flex flex-wrap gap-4 mb-8">
+      {/* All Products Link */}
+      <a
+        href="/products"
+        className={`px-4 py-2 rounded-full border transition-colors ${
+          !activeCategory
+            ? 'bg-primary text-primary-foreground border-primary'
+            : 'bg-white text-muted-foreground border-gray-300 hover:border-primary hover:text-primary'
         }`}
       >
         All Products
-      </button>
+      </a>
       
+      {/* Category Links */}
       {categories.map((category) => (
-        <button
+        <a
           key={category.key}
-          onClick={() => handleCategoryChange(category.key)}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            selectedCategory === category.key
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          href={`/products?category=${category.key}`}
+          className={`px-4 py-2 rounded-full border transition-colors ${
+            activeCategory === category.key
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-white text-muted-foreground border-gray-300 hover:border-primary hover:text-primary'
           }`}
         >
           {category.value}
-        </button>
+        </a>
       ))}
     </div>
   )
