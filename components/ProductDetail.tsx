@@ -2,14 +2,14 @@
 
 import { Product } from '@/types'
 import { useState } from 'react'
-import Link from 'next/link'
+import ProductReviews from './ProductReviews'
 
 interface ProductDetailProps {
   product: Product
 }
 
 export default function ProductDetail({ product }: ProductDetailProps) {
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [selectedImage, setSelectedImage] = useState(0)
   const [selectedSize, setSelectedSize] = useState<string>('')
 
   const productName = product.metadata?.product_name || product.title
@@ -21,163 +21,149 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const sizesAvailable = product.metadata?.sizes_available || []
   const materials = product.metadata?.materials
   const careInstructions = product.metadata?.care_instructions
-  const inStock = product.metadata?.in_stock
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0
-    }).format(price)
-  }
-
-  const handleImageClick = (index: number) => {
-    setSelectedImageIndex(index)
-  }
-
-  const handleSizeSelect = (size: string) => {
-    setSelectedSize(size)
-  }
-
-  // Get the currently selected image with proper null checking
-  const currentImage = images && images.length > 0 ? images[selectedImageIndex] : null
+  const inStock = product.metadata?.in_stock ?? true
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-      {/* Product Images */}
-      <div className="space-y-4">
-        {/* Main Image */}
-        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-          {currentImage ? (
-            <img
-              src={`${currentImage.imgix_url}?w=800&h=800&fit=crop&auto=format,compress`}
-              alt={productName}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              No image available
-            </div>
-          )}
-        </div>
-
-        {/* Image Thumbnails */}
-        {images && images.length > 1 && (
-          <div className="grid grid-cols-4 gap-4">
-            {images.map((image, index) => (
-              <button
-                key={index}
-                onClick={() => handleImageClick(index)}
-                className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-colors ${
-                  index === selectedImageIndex
-                    ? 'border-black'
-                    : 'border-transparent hover:border-gray-300'
-                }`}
-              >
-                <img
-                  src={`${image.imgix_url}?w=200&h=200&fit=crop&auto=format,compress`}
-                  alt={`${productName} view ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Product Images */}
+        <div className="space-y-4">
+          {/* Main Image */}
+          <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
+            {images.length > 0 ? (
+              <img
+                src={`${images[selectedImage]?.imgix_url}?w=800&h=800&fit=crop&auto=format,compress`}
+                alt={productName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                No image available
+              </div>
+            )}
           </div>
-        )}
-      </div>
-
-      {/* Product Details */}
-      <div className="space-y-6">
-        {/* Brand and Category */}
-        <div className="space-y-2">
-          {designerBrand && (
-            <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
-              {designerBrand}
-            </p>
-          )}
-          {category && (
-            <Link
-              href={`/products?category=${category.slug}`}
-              className="text-sm text-primary hover:text-primary/80"
-            >
-              {category.metadata?.category_name || category.title}
-            </Link>
-          )}
-        </div>
-
-        {/* Product Name */}
-        <h1 className="text-3xl font-bold">{productName}</h1>
-
-        {/* Price */}
-        {price && (
-          <p className="text-2xl font-semibold">
-            {formatPrice(price)}
-          </p>
-        )}
-
-        {/* Stock Status */}
-        <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${inStock ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span className={`text-sm font-medium ${inStock ? 'text-green-700' : 'text-red-700'}`}>
-            {inStock ? 'In Stock' : 'Out of Stock'}
-          </span>
-        </div>
-
-        {/* Size Selection */}
-        {sizesAvailable && sizesAvailable.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-lg font-medium">Size</h3>
-            <div className="flex flex-wrap gap-2">
-              {sizesAvailable.map((size) => (
+          
+          {/* Thumbnail Images */}
+          {images.length > 1 && (
+            <div className="grid grid-cols-4 gap-2">
+              {images.map((image, index) => (
                 <button
-                  key={size}
-                  onClick={() => handleSizeSelect(size)}
-                  className={`px-4 py-2 border rounded-md font-medium transition-colors ${
-                    selectedSize === size
-                      ? 'border-black bg-black text-white'
-                      : 'border-gray-300 hover:border-gray-400'
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  className={`aspect-square overflow-hidden rounded border-2 transition-colors ${
+                    selectedImage === index 
+                      ? 'border-black' 
+                      : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  {size}
+                  <img
+                    src={`${image.imgix_url}?w=200&h=200&fit=crop&auto=format,compress`}
+                    alt={`${productName} ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
                 </button>
               ))}
             </div>
+          )}
+        </div>
+
+        {/* Product Info */}
+        <div className="space-y-6">
+          {/* Brand and Category */}
+          <div className="space-y-1">
+            {designerBrand && (
+              <p className="text-sm text-muted-foreground font-medium">
+                {designerBrand}
+              </p>
+            )}
+            {category && (
+              <p className="text-sm text-muted-foreground">
+                {category.value}
+              </p>
+            )}
           </div>
-        )}
 
-        {/* Add to Cart Button */}
-        <button
-          disabled={!inStock || (sizesAvailable && sizesAvailable.length > 0 && !selectedSize)}
-          className="w-full bg-black text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-        >
-          {!inStock ? 'Out of Stock' : 'Add to Cart'}
-        </button>
+          {/* Product Name */}
+          <h1 className="text-3xl font-bold">{productName}</h1>
 
-        {/* Description */}
-        {description && (
-          <div className="space-y-3">
-            <h3 className="text-lg font-medium">Description</h3>
+          {/* Price */}
+          {price && (
+            <p className="text-2xl font-semibold">
+              ${price.toLocaleString()}
+            </p>
+          )}
+
+          {/* Description */}
+          {description && (
             <div 
-              className="text-gray-700 prose prose-sm max-w-none"
+              className="prose prose-gray max-w-none"
               dangerouslySetInnerHTML={{ __html: description }}
             />
-          </div>
-        )}
+          )}
 
-        {/* Materials */}
-        {materials && (
-          <div className="space-y-3">
-            <h3 className="text-lg font-medium">Materials</h3>
-            <p className="text-gray-700">{materials}</p>
-          </div>
-        )}
+          {/* Size Selection */}
+          {sizesAvailable.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="font-medium">Size</h3>
+              <div className="flex flex-wrap gap-2">
+                {sizesAvailable.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`px-4 py-2 border rounded transition-colors ${
+                      selectedSize === size
+                        ? 'border-black bg-black text-white'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-        {/* Care Instructions */}
-        {careInstructions && (
-          <div className="space-y-3">
-            <h3 className="text-lg font-medium">Care Instructions</h3>
-            <p className="text-gray-700">{careInstructions}</p>
+          {/* Add to Cart */}
+          <div className="space-y-4">
+            <button
+              disabled={!inStock || (sizesAvailable.length > 0 && !selectedSize)}
+              className="w-full bg-black text-white py-3 px-6 rounded font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {!inStock 
+                ? 'Out of Stock' 
+                : sizesAvailable.length > 0 && !selectedSize 
+                  ? 'Select a Size' 
+                  : 'Add to Cart'
+              }
+            </button>
+            
+            <button className="w-full border border-gray-300 text-gray-700 py-3 px-6 rounded font-medium hover:border-gray-400 transition-colors">
+              Add to Wishlist
+            </button>
           </div>
-        )}
+
+          {/* Product Details */}
+          <div className="space-y-4 border-t pt-6">
+            {materials && (
+              <div>
+                <h4 className="font-medium mb-2">Materials</h4>
+                <p className="text-muted-foreground text-sm">{materials}</p>
+              </div>
+            )}
+            
+            {careInstructions && (
+              <div>
+                <h4 className="font-medium mb-2">Care Instructions</h4>
+                <p className="text-muted-foreground text-sm">{careInstructions}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Product Reviews */}
+      <div className="mt-16">
+        <ProductReviews productId={product.id} />
       </div>
     </div>
   )

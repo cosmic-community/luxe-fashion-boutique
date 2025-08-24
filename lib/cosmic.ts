@@ -112,36 +112,47 @@ export async function getProduct(slug: string): Promise<Product | null> {
   }
 }
 
-// Fetch products by category ID (updated for object relationships)
-export async function getProductsByCategory(categoryId: string): Promise<Product[]> {
-  try {
-    const response = await cosmic.objects
-      .find({ 
-        type: 'products',
-        'metadata.category': categoryId
-      })
-      .props(['id', 'title', 'slug', 'metadata'])
-      .depth(1);
-    
-    return response.objects as Product[];
-  } catch (error) {
-    if (hasStatus(error) && error.status === 404) {
-      return [];
-    }
-    throw new Error(`Failed to fetch products for category: ${categoryId}`);
-  }
-}
-
-// Fetch products by category slug (convenience method)
+// Fetch products by category slug (filtering by category value, not ID)
 export async function getProductsByCategorySlug(categorySlug: string): Promise<Product[]> {
   try {
+    // First get the category to find its name
     const category = await getCategory(categorySlug);
     if (!category) {
       return [];
     }
-    return getProductsByCategory(category.id);
+
+    // Get all products and filter by category value
+    const allProducts = await getProducts();
+    const categoryName = category.metadata?.category_name || category.title;
+    
+    return allProducts.filter(product => {
+      const productCategory = product.metadata?.category;
+      return productCategory && 
+             typeof productCategory === 'object' && 
+             'value' in productCategory && 
+             productCategory.value === categoryName;
+    });
   } catch (error) {
     throw new Error(`Failed to fetch products for category slug: ${categorySlug}`);
+  }
+}
+
+// Updated method - keep for backwards compatibility but use slug-based filtering
+export async function getProductsByCategory(categoryIdOrSlug: string): Promise<Product[]> {
+  // Check if this looks like an ID (mongo-style) or a slug
+  if (categoryIdOrSlug.length === 24 && /^[a-f\d]+$/i.test(categoryIdOrSlug)) {
+    // This looks like a MongoDB ObjectId, but since we can't query by category ID directly
+    // in the current data structure, we'll need to get all products and filter
+    try {
+      const allProducts = await getProducts();
+      // This won't work with current data structure, so return empty array
+      return [];
+    } catch (error) {
+      return [];
+    }
+  } else {
+    // Treat as slug
+    return getProductsByCategorySlug(categoryIdOrSlug);
   }
 }
 

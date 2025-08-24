@@ -1,5 +1,5 @@
 // app/categories/[slug]/page.tsx
-import { getCategory, getProductsByCategory } from '@/lib/cosmic'
+import { getCategory, getProductsByCategorySlug } from '@/lib/cosmic'
 import ProductGrid from '@/components/ProductGrid'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
   const categoryName = category.metadata?.category_name || category.title
   const description = category.metadata?.description 
-    ? category.metadata.description.slice(0, 160)
+    ? category.metadata.description.replace(/<[^>]*>/g, '').slice(0, 160)
     : `Shop ${categoryName} at Luxe Fashion Boutique`
 
   return {
@@ -49,7 +49,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       notFound()
     }
 
-    const products = await getProductsByCategory(category.id)
+    const products = await getProductsByCategorySlug(slug)
     const categoryName = category.metadata?.category_name || category.title
 
     return (
@@ -69,9 +69,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">{categoryName}</h1>
             {category.metadata?.description && (
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                {category.metadata.description}
-              </p>
+              <div 
+                className="text-muted-foreground max-w-2xl mx-auto prose prose-gray"
+                dangerouslySetInnerHTML={{ __html: category.metadata.description }}
+              />
             )}
           </div>
         </div>
