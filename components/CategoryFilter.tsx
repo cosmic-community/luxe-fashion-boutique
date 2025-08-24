@@ -1,66 +1,45 @@
-'use client'
+"use client"
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { Category } from '@/types'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 interface CategoryFilterProps {
-  categories: string[]
-  selectedCategory: string
+  categories: Category[]
 }
 
-export default function CategoryFilter({ categories, selectedCategory }: CategoryFilterProps) {
-  const router = useRouter()
+export default function CategoryFilter({ categories }: CategoryFilterProps) {
   const searchParams = useSearchParams()
-
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (value === 'all') {
-        params.delete(name)
-      } else {
-        params.set(name, value)
-      }
-      return params.toString()
-    },
-    [searchParams]
-  )
-
-  const handleCategoryChange = (category: string) => {
-    const queryString = createQueryString('category', category)
-    router.push(`/products${queryString ? `?${queryString}` : ''}`)
-  }
-
-  // Capitalize category names for display
-  const formatCategoryName = (category: string) => {
-    return category.charAt(0).toUpperCase() + category.slice(1)
-  }
+  const currentCategory = searchParams.get('category')
 
   return (
-    <div className="flex flex-wrap gap-2 justify-center">
-      <button
-        onClick={() => handleCategoryChange('all')}
-        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-          selectedCategory === 'all'
-            ? 'bg-black text-white'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-        }`}
-      >
-        All Categories
-      </button>
-      
-      {categories.map((category) => (
-        <button
-          key={category}
-          onClick={() => handleCategoryChange(category)}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            selectedCategory === category
-              ? 'bg-black text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+    <div className="mb-8">
+      <h3 className="text-lg font-semibold mb-4">Filter by Category</h3>
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href="/products"
+          className={`px-4 py-2 rounded-full border transition-colors ${
+            !currentCategory
+              ? 'bg-black text-white border-black'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
           }`}
         >
-          {formatCategoryName(category)}
-        </button>
-      ))}
+          All Products
+        </Link>
+        {categories.map((category) => (
+          <Link
+            key={category.id}
+            href={`/products?category=${category.slug}`}
+            className={`px-4 py-2 rounded-full border transition-colors ${
+              currentCategory === category.slug
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            {category.metadata?.category_name || category.title}
+          </Link>
+        ))}
+      </div>
     </div>
   )
 }

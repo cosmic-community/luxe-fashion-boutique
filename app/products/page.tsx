@@ -1,66 +1,55 @@
-import { getProducts } from '@/lib/cosmic'
+import { getProducts, getCategories } from '@/lib/cosmic'
 import ProductGrid from '@/components/ProductGrid'
 import CategoryFilter from '@/components/CategoryFilter'
-import { Product } from '@/types'
 import { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: 'All Products - Luxe Fashion Boutique',
-  description: 'Browse our complete collection of luxury fashion items including dresses, accessories, and more.',
-}
 
 interface ProductsPageProps {
   searchParams: Promise<{ category?: string }>
 }
 
-export default async function ProductsPage({ searchParams }: ProductsPageProps) {
-  const { category } = await searchParams
-  
-  try {
-    const products = await getProducts()
-    
-    // Filter products by category if specified
-    const filteredProducts = category 
-      ? products.filter(product => 
-          product.metadata?.category?.key === category
-        )
-      : products
+export const metadata: Metadata = {
+  title: 'Products - Luxe Fashion Boutique',
+  description: 'Browse our collection of luxury fashion products including dresses, bags, shoes, and accessories.',
+}
 
-    // Get unique categories for filter - FIX THE TYPESCRIPT ERROR HERE
-    const categories: string[] = products
-      .map(product => product.metadata?.category?.key)
-      .filter((category): category is string => category !== undefined && category !== '') // Type guard to filter out undefined values
-      .filter((category, index, array) => array.indexOf(category) === index) // Remove duplicates
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  const resolvedSearchParams = await searchParams
+  const categoryFilter = resolvedSearchParams.category
+
+  try {
+    const [allProducts, categories] = await Promise.all([
+      getProducts(),
+      getCategories()
+    ])
+
+    // Filter products by category if specified
+    let filteredProducts = allProducts
+    if (categoryFilter) {
+      filteredProducts = allProducts.filter(product => 
+        product.metadata?.category?.slug === categoryFilter
+      )
+    }
 
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">All Products</h1>
+          <h1 className="text-4xl font-bold mb-4">Our Products</h1>
           <p className="text-muted-foreground">
-            Discover our complete collection of luxury fashion pieces
+            Discover our curated collection of luxury fashion
           </p>
         </div>
 
-        {categories.length > 0 && (
-          <div className="mb-8">
-            <CategoryFilter 
-              categories={categories}
-              selectedCategory={category}
-            />
-          </div>
-        )}
+        <CategoryFilter categories={categories} />
 
         {filteredProducts.length > 0 ? (
           <ProductGrid products={filteredProducts} />
         ) : (
           <div className="text-center py-16">
-            <h2 className="text-xl font-semibold mb-2">
-              {category ? 'No products found in this category' : 'No products available'}
-            </h2>
+            <h2 className="text-2xl font-bold mb-4">No products found</h2>
             <p className="text-muted-foreground">
-              {category 
-                ? 'Try selecting a different category or browse all products.' 
-                : 'Please check back later for new arrivals.'
+              {categoryFilter 
+                ? `No products available in this category.`
+                : `No products available at the moment.`
               }
             </p>
           </div>

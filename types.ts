@@ -10,7 +10,22 @@ interface CosmicObject {
   modified_at: string;
 }
 
-// Product interface matching your content model
+// Category interface for the new categories object type
+export interface Category extends CosmicObject {
+  type: 'categories';
+  metadata: {
+    category_name?: string;
+    description?: string;
+    category_image?: {
+      url: string;
+      imgix_url: string;
+    };
+    featured_category?: boolean;
+    sort_order?: number;
+  };
+}
+
+// Product interface matching updated content model
 export interface Product extends CosmicObject {
   type: 'products';
   metadata: {
@@ -22,10 +37,7 @@ export interface Product extends CosmicObject {
       imgix_url: string;
     }[];
     designer_brand?: string;
-    category?: {
-      key: string;
-      value: string;
-    };
+    category?: Category;
     sizes_available?: string[];
     materials?: string;
     care_instructions?: string;
@@ -72,7 +84,6 @@ export interface Review extends CosmicObject {
 }
 
 // Type literals for select-dropdown values
-export type ProductCategory = 'dresses' | 'tops' | 'bottoms' | 'outerwear' | 'accessories' | 'shoes' | 'bags';
 export type ProductSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
 export type RatingValue = '1' | '2' | '3' | '4' | '5';
 
@@ -100,4 +111,8 @@ export function isCollection(obj: CosmicObject): obj is Collection {
 
 export function isReview(obj: CosmicObject): obj is Review {
   return obj.type === 'reviews';
+}
+
+export function isCategory(obj: CosmicObject): obj is Category {
+  return obj.type === 'categories';
 }

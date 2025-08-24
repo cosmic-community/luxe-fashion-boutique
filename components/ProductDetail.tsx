@@ -96,10 +96,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           )}
           {category && (
             <Link
-              href={`/products?category=${category.key}`}
+              href={`/products?category=${category.slug}`}
               className="text-sm text-primary hover:text-primary/80"
             >
-              {category.value}
+              {category.metadata?.category_name || category.title}
             </Link>
           )}
         </div>
