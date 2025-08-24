@@ -1,3 +1,5 @@
+"use client"
+
 import { Product } from '@/types'
 import { useState } from 'react'
 import Link from 'next/link'
@@ -10,30 +12,31 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [selectedSize, setSelectedSize] = useState<string>('')
 
-  // Safely access product metadata with proper null checks
   const productName = product.metadata?.product_name || product.title
   const description = product.metadata?.description
   const price = product.metadata?.price
-  const productImages = product.metadata?.product_images || []
+  const images = product.metadata?.product_images || []
   const designerBrand = product.metadata?.designer_brand
   const category = product.metadata?.category
   const sizesAvailable = product.metadata?.sizes_available || []
   const materials = product.metadata?.materials
   const careInstructions = product.metadata?.care_instructions
-  const inStock = product.metadata?.in_stock ?? true
+  const inStock = product.metadata?.in_stock
 
-  // Get the main image URL with proper fallback and optimization
-  const mainImage = productImages.length > 0 
-    ? `${productImages[selectedImageIndex]?.imgix_url || productImages[0]?.imgix_url}?w=800&h=800&fit=crop&auto=format,compress`
-    : '/placeholder-image.jpg'
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0
+    }).format(price)
+  }
 
-  const handleAddToCart = () => {
-    // TODO: Implement add to cart functionality
-    console.log('Added to cart:', {
-      productId: product.id,
-      size: selectedSize,
-      quantity: 1
-    })
+  const handleImageClick = (index: number) => {
+    setSelectedImageIndex(index)
+  }
+
+  const handleSizeSelect = (size: string) => {
+    setSelectedSize(size)
   }
 
   return (
@@ -41,24 +44,30 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       {/* Product Images */}
       <div className="space-y-4">
         {/* Main Image */}
-        <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
-          <img
-            src={mainImage}
-            alt={productName}
-            className="w-full h-full object-cover"
-          />
+        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+          {images.length > 0 ? (
+            <img
+              src={`${images[selectedImageIndex].imgix_url}?w=800&h=800&fit=crop&auto=format,compress`}
+              alt={productName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              No image available
+            </div>
+          )}
         </div>
-        
-        {/* Thumbnail Images */}
-        {productImages.length > 1 && (
+
+        {/* Image Thumbnails */}
+        {images.length > 1 && (
           <div className="grid grid-cols-4 gap-4">
-            {productImages.map((image, index) => (
+            {images.map((image, index) => (
               <button
                 key={index}
-                onClick={() => setSelectedImageIndex(index)}
-                className={`aspect-square overflow-hidden rounded-lg border-2 ${
-                  selectedImageIndex === index
-                    ? 'border-primary'
+                onClick={() => handleImageClick(index)}
+                className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-colors ${
+                  index === selectedImageIndex
+                    ? 'border-black'
                     : 'border-transparent hover:border-gray-300'
                 }`}
               >
@@ -75,18 +84,20 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
       {/* Product Details */}
       <div className="space-y-6">
-        {/* Category and Brand */}
+        {/* Brand and Category */}
         <div className="space-y-2">
+          {designerBrand && (
+            <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+              {designerBrand}
+            </p>
+          )}
           {category && (
             <Link
               href={`/products?category=${category.key}`}
-              className="text-sm text-primary hover:text-primary/80 font-medium"
+              className="text-sm text-primary hover:text-primary/80"
             >
               {category.value}
             </Link>
-          )}
-          {designerBrand && (
-            <p className="text-sm text-muted-foreground">{designerBrand}</p>
           )}
         </div>
 
@@ -94,31 +105,33 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         <h1 className="text-3xl font-bold">{productName}</h1>
 
         {/* Price */}
-        {typeof price === 'number' && (
-          <p className="text-2xl font-bold">${price.toLocaleString()}</p>
+        {price && (
+          <p className="text-2xl font-semibold">
+            {formatPrice(price)}
+          </p>
         )}
 
-        {/* Description */}
-        {description && (
-          <div
-            className="text-muted-foreground prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: description }}
-          />
-        )}
+        {/* Stock Status */}
+        <div className="flex items-center gap-2">
+          <div className={`w-3 h-3 rounded-full ${inStock ? 'bg-green-500' : 'bg-red-500'}`} />
+          <span className={`text-sm font-medium ${inStock ? 'text-green-700' : 'text-red-700'}`}>
+            {inStock ? 'In Stock' : 'Out of Stock'}
+          </span>
+        </div>
 
         {/* Size Selection */}
         {sizesAvailable.length > 0 && (
           <div className="space-y-3">
-            <label className="text-sm font-medium">Size</label>
+            <h3 className="text-lg font-medium">Size</h3>
             <div className="flex flex-wrap gap-2">
               {sizesAvailable.map((size) => (
                 <button
                   key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
+                  onClick={() => handleSizeSelect(size)}
+                  className={`px-4 py-2 border rounded-md font-medium transition-colors ${
                     selectedSize === size
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-gray-300 hover:border-primary'
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
                   {size}
@@ -129,45 +142,39 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         )}
 
         {/* Add to Cart Button */}
-        <div className="space-y-4">
-          <button
-            onClick={handleAddToCart}
-            disabled={!inStock || (sizesAvailable.length > 0 && !selectedSize)}
-            className={`w-full py-3 px-6 rounded-md font-medium text-white transition-colors ${
-              inStock && (sizesAvailable.length === 0 || selectedSize)
-                ? 'bg-primary hover:bg-primary/90'
-                : 'bg-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {!inStock 
-              ? 'Out of Stock' 
-              : sizesAvailable.length > 0 && !selectedSize
-                ? 'Select a Size'
-                : 'Add to Cart'
-            }
-          </button>
-          
-          {!inStock && (
-            <p className="text-sm text-red-600">This item is currently out of stock</p>
-          )}
-        </div>
+        <button
+          disabled={!inStock || (sizesAvailable.length > 0 && !selectedSize)}
+          className="w-full bg-black text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          {!inStock ? 'Out of Stock' : 'Add to Cart'}
+        </button>
 
-        {/* Product Details */}
-        <div className="border-t pt-6 space-y-4">
-          {materials && (
-            <div>
-              <h3 className="font-medium mb-2">Materials</h3>
-              <p className="text-sm text-muted-foreground">{materials}</p>
-            </div>
-          )}
-          
-          {careInstructions && (
-            <div>
-              <h3 className="font-medium mb-2">Care Instructions</h3>
-              <p className="text-sm text-muted-foreground">{careInstructions}</p>
-            </div>
-          )}
-        </div>
+        {/* Description */}
+        {description && (
+          <div className="space-y-3">
+            <h3 className="text-lg font-medium">Description</h3>
+            <div 
+              className="text-gray-700 prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
+          </div>
+        )}
+
+        {/* Materials */}
+        {materials && (
+          <div className="space-y-3">
+            <h3 className="text-lg font-medium">Materials</h3>
+            <p className="text-gray-700">{materials}</p>
+          </div>
+        )}
+
+        {/* Care Instructions */}
+        {careInstructions && (
+          <div className="space-y-3">
+            <h3 className="text-lg font-medium">Care Instructions</h3>
+            <p className="text-gray-700">{careInstructions}</p>
+          </div>
+        )}
       </div>
     </div>
   )
