@@ -1,42 +1,65 @@
 'use client'
 
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback } from 'react'
+
 interface CategoryFilterProps {
-  categories: Array<{ key: string; value: string }>
-  activeCategory?: string
+  categories: string[]
+  selectedCategory: string
 }
 
-export default function CategoryFilter({ categories, activeCategory }: CategoryFilterProps) {
-  if (categories.length === 0) {
-    return null
+export default function CategoryFilter({ categories, selectedCategory }: CategoryFilterProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (value === 'all') {
+        params.delete(name)
+      } else {
+        params.set(name, value)
+      }
+      return params.toString()
+    },
+    [searchParams]
+  )
+
+  const handleCategoryChange = (category: string) => {
+    const queryString = createQueryString('category', category)
+    router.push(`/products${queryString ? `?${queryString}` : ''}`)
+  }
+
+  // Capitalize category names for display
+  const formatCategoryName = (category: string) => {
+    return category.charAt(0).toUpperCase() + category.slice(1)
   }
 
   return (
-    <div className="flex flex-wrap gap-4 mb-8">
-      {/* All Products Link */}
-      <a
-        href="/products"
-        className={`px-4 py-2 rounded-full border transition-colors ${
-          !activeCategory
-            ? 'bg-primary text-primary-foreground border-primary'
-            : 'bg-white text-muted-foreground border-gray-300 hover:border-primary hover:text-primary'
+    <div className="flex flex-wrap gap-2 justify-center">
+      <button
+        onClick={() => handleCategoryChange('all')}
+        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          selectedCategory === 'all'
+            ? 'bg-black text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
         }`}
       >
-        All Products
-      </a>
+        All Categories
+      </button>
       
-      {/* Category Links */}
       {categories.map((category) => (
-        <a
-          key={category.key}
-          href={`/products?category=${category.key}`}
-          className={`px-4 py-2 rounded-full border transition-colors ${
-            activeCategory === category.key
-              ? 'bg-primary text-primary-foreground border-primary'
-              : 'bg-white text-muted-foreground border-gray-300 hover:border-primary hover:text-primary'
+        <button
+          key={category}
+          onClick={() => handleCategoryChange(category)}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            selectedCategory === category
+              ? 'bg-black text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          {category.value}
-        </a>
+          {formatCategoryName(category)}
+        </button>
       ))}
     </div>
   )
