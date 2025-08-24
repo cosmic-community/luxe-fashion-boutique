@@ -5,16 +5,32 @@ interface ProductDetailProps {
 }
 
 export default function ProductDetail({ product }: ProductDetailProps) {
-  const productName = product.metadata?.product_name || product.title
-  const description = product.metadata?.description
-  const price = product.metadata?.price
-  const brand = product.metadata?.designer_brand
-  const category = product.metadata?.category?.value
-  const sizes = product.metadata?.sizes_available || []
-  const materials = product.metadata?.materials
-  const careInstructions = product.metadata?.care_instructions
-  const images = product.metadata?.product_images || []
-  const isInStock = product.metadata?.in_stock
+  // Add null checks for all metadata access
+  const metadata = product.metadata
+  if (!metadata) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+          <span className="text-gray-400">No Product Data Available</span>
+        </div>
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold">{product.title}</h1>
+          <p className="text-muted-foreground">Product details are not available.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const productName = metadata.product_name || product.title
+  const description = metadata.description
+  const price = metadata.price
+  const brand = metadata.designer_brand
+  const category = metadata.category?.value
+  const sizes = metadata.sizes_available || []
+  const materials = metadata.materials
+  const careInstructions = metadata.care_instructions
+  const images = metadata.product_images || []
+  const isInStock = metadata.in_stock
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -67,7 +83,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           <p className="text-3xl font-bold text-primary">${price}</p>
         )}
         
-        {!isInStock && (
+        {isInStock === false && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-800 font-medium">Currently Out of Stock</p>
           </div>
