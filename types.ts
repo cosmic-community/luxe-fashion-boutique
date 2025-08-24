@@ -10,6 +10,12 @@ interface CosmicObject {
   modified_at: string;
 }
 
+// Select-dropdown field interface for consistent typing
+interface SelectDropdownField {
+  key: string;
+  value: string;
+}
+
 // Category interface for the new categories object type
 export interface Category extends CosmicObject {
   type: 'categories';
@@ -37,7 +43,7 @@ export interface Product extends CosmicObject {
       imgix_url: string;
     }[];
     designer_brand?: string;
-    category?: Category;
+    category?: SelectDropdownField; // Fixed: category is a select-dropdown field, not Category object
     sizes_available?: string[];
     materials?: string;
     care_instructions?: string;
@@ -68,17 +74,11 @@ export interface Review extends CosmicObject {
   metadata: {
     product?: Product;
     customer_name?: string;
-    rating?: {
-      key: string;
-      value: string;
-    };
+    rating?: SelectDropdownField;
     review_title?: string;
     review_content?: string;
     verified_purchase?: boolean;
-    size_purchased?: {
-      key: string;
-      value: string;
-    };
+    size_purchased?: SelectDropdownField;
     approved?: boolean;
   };
 }
