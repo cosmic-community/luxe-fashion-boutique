@@ -2,7 +2,6 @@
 
 import { Product } from '@/types'
 import { useState } from 'react'
-import ProductReviews from './ProductReviews'
 
 interface ProductDetailProps {
   product: Product
@@ -159,11 +158,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Product Reviews */}
-      <div className="mt-16">
-        <ProductReviews productId={product.id} />
       </div>
     </div>
   )
