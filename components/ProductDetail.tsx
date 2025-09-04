@@ -10,6 +10,7 @@ interface ProductDetailProps {
 export default function ProductDetail({ product }: ProductDetailProps) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedSize, setSelectedSize] = useState<string>('')
+  const [imageLoading, setImageLoading] = useState(false)
 
   const productName = product.metadata?.product_name || product.title
   const description = product.metadata?.description
@@ -22,18 +23,40 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const careInstructions = product.metadata?.care_instructions
   const inStock = product.metadata?.in_stock ?? true
 
+  const handleThumbnailClick = (index: number) => {
+    if (index !== selectedImage) {
+      setImageLoading(true)
+      setSelectedImage(index)
+      
+      // Simulate loading state for better UX
+      setTimeout(() => {
+        setImageLoading(false)
+      }, 300)
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Product Images */}
         <div className="space-y-4">
           {/* Main Image */}
-          <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
+          <div className="aspect-square overflow-hidden rounded-lg bg-gray-100 relative">
+            {/* Loading overlay */}
+            {imageLoading && (
+              <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+              </div>
+            )}
+            
             {images.length > 0 ? (
               <img
                 src={`${images[selectedImage]?.imgix_url}?w=800&h=800&fit=crop&auto=format,compress`}
                 alt={productName}
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover transition-opacity duration-300 ${
+                  imageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
+                onLoad={() => setImageLoading(false)}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -48,12 +71,17 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               {images.map((image, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`aspect-square overflow-hidden rounded border-2 transition-colors ${
+                  onClick={() => handleThumbnailClick(index)}
+                  className={`aspect-square overflow-hidden rounded border-2 transition-all duration-200 ${
                     selectedImage === index 
                       ? 'border-black' 
                       : 'border-gray-200 hover:border-gray-300'
+                  } ${
+                    imageLoading && selectedImage === index
+                      ? 'opacity-75 cursor-wait'
+                      : 'hover:opacity-80'
                   }`}
+                  disabled={imageLoading}
                 >
                   <img
                     src={`${image.imgix_url}?w=200&h=200&fit=crop&auto=format,compress`}
