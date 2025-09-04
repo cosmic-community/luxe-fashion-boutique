@@ -1,4 +1,6 @@
 export default function Footer() {
+  const currentYear = new Date().getFullYear()
+
   return (
     <footer className="border-t bg-muted/50 mt-16">
       <div className="container mx-auto px-4 py-8">
@@ -30,7 +32,7 @@ export default function Footer() {
         </div>
         
         <div className="border-t mt-8 pt-8 text-center text-muted-foreground">
-          <p>&copy; 2024 Luxe Fashion Boutique. All rights reserved.</p>
+          <p>&copy; {currentYear} Luxe Fashion Boutique. All rights reserved.</p>
         </div>
       </div>
     </footer>
