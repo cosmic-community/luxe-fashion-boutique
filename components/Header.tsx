@@ -26,15 +26,15 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-8">
             <Link 
               href="/products" 
-              className="text-foreground hover:text-primary transition-colors font-medium"
+              className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-2"
             >
-              Products
+              👗 Products
             </Link>
             <Link 
               href="/collections" 
-              className="text-foreground hover:text-primary transition-colors font-medium"
+              className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-2"
             >
-              Collections
+              ✨ Collections
             </Link>
           </div>
           
@@ -65,17 +65,17 @@ export default function Header() {
             <div className="pt-4 space-y-3">
               <Link 
                 href="/products" 
-                className="block text-foreground hover:text-primary transition-colors font-medium py-2"
+                className="block text-foreground hover:text-primary transition-colors font-medium py-2 flex items-center gap-2"
                 onClick={closeMobileMenu}
               >
-                Products
+                👗 Products
               </Link>
               <Link 
                 href="/collections" 
-                className="block text-foreground hover:text-primary transition-colors font-medium py-2"
+                className="block text-foreground hover:text-primary transition-colors font-medium py-2 flex items-center gap-2"
                 onClick={closeMobileMenu}
               >
-                Collections
+                ✨ Collections
               </Link>
             </div>
           </div>
